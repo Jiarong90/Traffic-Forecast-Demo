@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map Demo Page</title>
+    <meta charset="utf-8" />
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #map {
+            flex: 1;
+            float:left;
+        }
+
+        #infobar {
+            float: right;
+            width: 300px;
+            overflow-y: auto;
+            border-left: 2px solid #ccc;
+            padding: 10px;
+        }
+
+        #incidents {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .incident-item {
+            background: #ffffff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: background 0.2s, tranform 0.1s;
+        }
+
+        .incident-item:hover {
+            background: #f0f7ff;
+            transform: translateX(4px);
+        }
+
+        .incident-item:active {
+            background: #dbeaff;
+        }
+
+        .incident-type {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .incident-message {
+            font-size: 10px;
+        }
+    
+        #infobar h3 {
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        
+        <div id="map"></div>
+        <div id ="infobar">
+            <h3> Recent Traffic Incidents </h3>
+            <ul id="incidents"></ul>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const map = L.map('map').setView([1.3521, 103.8198], 12)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        async function getIncidents() {
+            response = await fetch("/api/incidents");
+            data = await response.json();
+            
+            list = document.getElementById("incidents");
+            list.innerHTML = "";
+
+            data.incidents.forEach(incident => {
+                li = document.createElement("li");
+                li.className = "incident-item"
+                li.style.cursor = "pointer";
+                li.style.marginBottom = "10px";
+                li.innerHTML = `<div class='incident-type'>${incident.Type}</div <div class='incident-message'>${incident.Message}</div>`
+
+                li.onclick = () => {
+                    const lat = incident.Latitude;
+                    const lon = incident.Longitude;
+
+                    map.setView([lat, lon], 16);
+
+                    L.marker([lat, lon])
+                    .addTo(map)
+                    .bindPopup(incident.Message)
+                    .openPopup();
+                };
+                list.appendChild(li);
+            });
+        }
+        getIncidents();
+    </script>
+
+</body>
+</html>
