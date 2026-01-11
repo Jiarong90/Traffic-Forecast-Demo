@@ -26,7 +26,7 @@ def get_incidents():
         "AccountKey": API_KEY,
         "accept": "application/json"
     }
-    num_incidents = 10
+    num_incidents = 20
 
     data = requests.get(url_incidents, headers=headers).json()
     incidents = data.get("value", [])
