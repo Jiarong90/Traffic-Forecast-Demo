@@ -14,6 +14,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            zoom: 1;
         }
 
         #container {
@@ -29,7 +30,8 @@
 
         #infobar {
             float: right;
-            width: 300px;
+            width: 350px;
+            max-width: 350px;
             overflow-y: auto;
             border-left: 2px solid #ccc;
             padding: 10px;
@@ -40,6 +42,7 @@
             padding: 0;
             margin: 0;
             font-family: Arial, sans-serif;
+            
         }
 
         .incident-item {
@@ -67,7 +70,7 @@
         }
 
         .incident-message {
-            font-size: 10px;
+            font-size: 15px;
         }
     
         #infobar h3 {
@@ -80,7 +83,7 @@
         
         <div id="map"></div>
         <div id ="infobar">
-            <h3> Recent Traffic Incidents </h3>
+            <h3 style="font-size: 20px;"> Recent Traffic Incidents </h3>
             <ul id="incidents"></ul>
         </div>
     </div>
@@ -101,12 +104,35 @@
             list = document.getElementById("incidents");
             list.innerHTML = "";
 
+            const roadNames = [
+                "PIE", "CTE", "AYE", "ECP", "KPE", "TPE", "SLE", "BKE", 
+                "Lornie Road", "Bukit Timah Road", "Nicoll Highway",
+                "Yio Chu Kang Road", "Upper Thomson Road"
+            ];
+
+
             data.incidents.forEach(incident => {
+
+                const mockImpact = Math.floor(Math.random() * 5) + 1;       
+                const mockDelay = Math.floor(Math.random() * 20) + 5;        
+                
+                const roadCount = Math.floor(Math.random() * 3) + 1;
+                const impactedRoads = Array.from({ length: roadCount }, () =>
+                    roadNames[Math.floor(Math.random() * roadNames.length)]
+                ).join(", ");
+                
+
                 li = document.createElement("li");
                 li.className = "incident-item"
                 li.style.cursor = "pointer";
                 li.style.marginBottom = "10px";
-                li.innerHTML = `<div class='incident-type'>${incident.Type}</div <div class='incident-message'>${incident.Message}</div>`
+                li.innerHTML = `<div class='incident-type'>${incident.Type}</div> <div class='incident-message'>${incident.Message}</div>
+                <div style="margin-top:6px; font-size:12px; color:#333;">
+                    <b>Impact Level:</b> <b style="color: red;""> ${mockImpact}/5</b><br>
+                    <b>Estimated Delay:</b> <b style="color: red;""> ${mockDelay} </b> min <br>
+                    <b>Impacted Roads:</b> ${impactedRoads}
+                </div>
+                `
 
                 li.onclick = () => {
                     const lat = incident.Latitude;
@@ -121,6 +147,10 @@
                 };
                 list.appendChild(li);
             });
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 100);
         }
         getIncidents();
     </script>
