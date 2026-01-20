@@ -7,8 +7,9 @@ import os
 
 load_dotenv()
 
-API_KEY = os.getenv("LTA_API_KEY")
-if not API_KEY:
+LTA_API_KEY = os.getenv("LTA_API_KEY")
+DATA_GOV_API_KEY = os.getenv("DATA_GOV_API_KEY")
+if not LTA_API_KEY or not DATA_GOV_API_KEY:
     raise Exception("API Key not found")
 
 app = FastAPI()
@@ -23,7 +24,7 @@ def root():
 def get_incidents():
     url_incidents = "https://datamall2.mytransport.sg/ltaodataservice/TrafficIncidents"
     headers = {
-        "AccountKey": API_KEY,
+        "AccountKey": LTA_API_KEY,
         "accept": "application/json"
     }
     num_incidents = 20
