@@ -10,12 +10,22 @@ load_dotenv()
 
 LTA_API_KEY = os.getenv("LTA_API_KEY")
 DATA_GOV_API_KEY = os.getenv("DATA_GOV_API_KEY")
-SUPABASE_URL = "https://vwywaannhemxefrrqrtv.supabase.co"
-SUPABASE_API_KEY = "sb_publishable_FfuRkw4At-Nlko5mVXoGaQ_ib_jrEFr"
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY")
 
 app = FastAPI()
 
+# For now, create a dev bypass so we don't have to log in everytime
+DEV_BYPASS_AUTH = os.getenv("DEV_BYPASS_AUTH", "0") == "1"
+
+# Implement this for API endpoints we want to protect, 
+# to ensure user is authenticated before being able to access our services
 def require_user(authorization: str | None):
+
+    # Dev bypass
+    if DEV_BYPASS_AUTH:
+        return {"id": "dev-user"}
+    
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Not Logged In")
     r = requests.get(
@@ -44,6 +54,8 @@ def success():
 @app.get("/api/incidents")
 def get_incidents(authorization: str | None = Header(default=None)):
 
+    num_incidents = 30
+
     if not LTA_API_KEY:
         return load_placeholder_incidents(num_incidents, reason="missing_lta_api_key")
 
@@ -54,9 +66,7 @@ def get_incidents(authorization: str | None = Header(default=None)):
         "AccountKey": LTA_API_KEY,
         "accept": "application/json"
     }
-    num_incidents = 30
 
-    
     try:
         response = requests.get(url_incidents, headers=headers, timeout=5)
         response.raise_for_status()
